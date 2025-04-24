@@ -211,9 +211,6 @@ def create_analysis(input_file):
     with open(input_file, 'r', encoding='utf-8') as f:
         text = f.read()
     
-    # 全ての改行を削除
-    text = text.replace('\n', '')
-    
     # 本文中の──をHTMLエンティティに置換
     text = text.replace('──', '&mdash;')
     
@@ -242,189 +239,184 @@ def create_analysis(input_file):
     # 結果をHTMLとして出力
     output_file = input_file.replace('.txt', '_analysis.html')
     with open(output_file, 'w', encoding='utf-8') as f:
-        f.write('<!DOCTYPE html>\n')
-        f.write('<html>\n')
-        f.write('<head>\n')
-        f.write('    <meta charset="UTF-8">\n')
-        f.write('    <title>テキスト分析結果</title>\n')
-        f.write('    <style>\n')
-        f.write('        body {\n')
-        f.write('            font-family: "Helvetica Neue", Arial, sans-serif;\n')
-        f.write('            line-height: 1.6;\n')
-        f.write('            color: #333;\n')
-        f.write('            max-width: 800px;\n')
-        f.write('            margin: 0 auto;\n')
-        f.write('            padding: 20px;\n')
-        f.write('            background-color: #f5f5f5;\n')
-        f.write('        }\n')
-        f.write('        .container {\n')
-        f.write('            background-color: white;\n')
-        f.write('            border-radius: 8px;\n')
-        f.write('            padding: 30px;\n')
-        f.write('            box-shadow: 0 2px 4px rgba(0,0,0,0.1);\n')
-        f.write('        }\n')
-        f.write('        h1 {\n')
-        f.write('            color: #2c3e50;\n')
-        f.write('            border-bottom: 2px solid #3498db;\n')
-        f.write('            padding-bottom: 10px;\n')
-        f.write('            margin-top: 0;\n')
-        f.write('        }\n')
-        f.write('        .section {\n')
-        f.write('            background-color: #f8f9fa;\n')
-        f.write('            border-radius: 8px;\n')
-        f.write('            padding: 20px;\n')
-        f.write('            margin-bottom: 30px;\n')
-        f.write('        }\n')
-        f.write('        .section h2 {\n')
-        f.write('            color: #2c3e50;\n')
-        f.write('            margin-top: 0;\n')
-        f.write('        }\n')
-        f.write('        .stats {\n')
-        f.write('            display: grid;\n')
-        f.write('            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));\n')
-        f.write('            gap: 20px;\n')
-        f.write('            margin-top: 15px;\n')
-        f.write('        }\n')
-        f.write('        .stat-item {\n')
-        f.write('            background-color: white;\n')
-        f.write('            padding: 15px;\n')
-        f.write('            border-radius: 6px;\n')
-        f.write('            box-shadow: 0 1px 3px rgba(0,0,0,0.1);\n')
-        f.write('        }\n')
-        f.write('        .stat-item p {\n')
-        f.write('            margin: 0;\n')
-        f.write('            font-size: 1.1em;\n')
-        f.write('        }\n')
-        f.write('        .stat-item .label {\n')
-        f.write('            color: #7f8c8d;\n')
-        f.write('            font-size: 0.9em;\n')
-        f.write('        }\n')
-        f.write('        .stat-item .value {\n')
-        f.write('            color: #2c3e50;\n')
-        f.write('            font-weight: bold;\n')
-        f.write('            font-size: 1.2em;\n')
-        f.write('        }\n')
-        f.write('        ul {\n')
-        f.write('            list-style-type: none;\n')
-        f.write('            padding: 0;\n')
-        f.write('            margin: 0;\n')
-        f.write('        }\n')
-        f.write('        li {\n')
-        f.write('            background-color: white;\n')
-        f.write('            padding: 10px 15px;\n')
-        f.write('            margin-bottom: 8px;\n')
-        f.write('            border-radius: 4px;\n')
-        f.write('            box-shadow: 0 1px 2px rgba(0,0,0,0.1);\n')
-        f.write('        }\n')
-        f.write('        .highlight {\n')
-        f.write('            background-color: #fff3cd;\n')
-        f.write('            padding: 2px 4px;\n')
-        f.write('            border-radius: 3px;\n')
-        f.write('        }\n')
-        f.write('        .text-container {\n')
-        f.write('            margin-bottom: 30px;\n')
-        f.write('            font-size: 16px;\n')
-        f.write('            line-height: 1.8;\n')
-        f.write('            padding: 20px;\n')
-        f.write('            background-color: white;\n')
-        f.write('            border-radius: 8px;\n')
-        f.write('            box-shadow: 0 1px 3px rgba(0,0,0,0.1);\n')
-        f.write('        }\n')
-        f.write('        .frequent-words {\n')
-        f.write('            margin: 20px 0;\n')
-        f.write('            padding: 20px;\n')
-        f.write('            background-color: white;\n')
-        f.write('            border-radius: 8px;\n')
-        f.write('            box-shadow: 0 1px 3px rgba(0,0,0,0.1);\n')
-        f.write('        }\n')
-        f.write('        table {\n')
-        f.write('            width: 100%;\n')
-        f.write('            border-collapse: collapse;\n')
-        f.write('            margin: 20px 0;\n')
-        f.write('            background-color: white;\n')
-        f.write('            box-shadow: 0 1px 3px rgba(0,0,0,0.1);\n')
-        f.write('        }\n')
-        f.write('        th, td {\n')
-        f.write('            padding: 12px 15px;\n')
-        f.write('            text-align: left;\n')
-        f.write('            border-bottom: 1px solid #ddd;\n')
-        f.write('        }\n')
-        f.write('        th {\n')
-        f.write('            background-color: #3498db;\n')
-        f.write('            color: white;\n')
-        f.write('        }\n')
-        f.write('        tr:hover {\n')
-        f.write('            background-color: #f5f5f5;\n')
-        f.write('        }\n')
-        f.write('        @media (max-width: 600px) {\n')
-        f.write('            .stats {\n')
-        f.write('                grid-template-columns: 1fr;\n')
-        f.write('            }\n')
-        f.write('        }\n')
-        f.write('    </style>\n')
-        f.write('</head>\n')
-        f.write('<body>\n')
-        f.write('    <div class="container">\n')
-        f.write('        <h1>テキスト分析結果</h1>\n')
-        f.write('        \n')
-        f.write('        <div class="section">\n')
-        f.write('            <h2>分析対象テキスト</h2>\n')
-        f.write('            <div class="highlight">注: 色付きで表示されている単語は、上位10個の頻出単語です。同じ単語は同じ色で表示されています。</div>\n')
-        f.write('            <div class="text-container">\n')
-        f.write(f'                {highlight_frequent_words(text, frequent_words)}\n')
-        f.write('            </div>\n')
-        f.write('        </div>\n')
-        f.write('        \n')
-        f.write('        <div class="section">\n')
-        f.write('            <h2>頻出単語トップ10</h2>\n')
-        f.write('            <div class="frequent-words">\n')
-        f.write('                <table>\n')
-        f.write('                    <tr>\n')
-        f.write('                        <th>単語</th>\n')
-        f.write('                        <th>回数</th>\n')
-        f.write('                    </tr>\n')
-        for i, (word, count) in enumerate(frequent_words):
-            color = get_color_for_word(word, {}, i)
-            f.write(f'                    <tr>\n')
-            f.write(f'                        <td><span style="background-color: {color}; color: white; padding: 2px 4px; border-radius: 3px;">{word}</span></td>\n')
-            f.write(f'                        <td>{count}回</td>\n')
-            f.write(f'                    </tr>\n')
-        f.write('                </table>\n')
-        f.write('            </div>\n')
-        f.write('        </div>\n')
-        f.write('        \n')
-        f.write('        <div class="section">\n')
-        f.write('            <h2>基本統計</h2>\n')
-        f.write('            <div class="stats">\n')
-        f.write('                <div class="stat-item">\n')
-        f.write('                    <p class="label">総文字数</p>\n')
-        f.write(f'                    <p class="value">{len(text)}</p>\n')
-        f.write('                </div>\n')
-        f.write('                <div class="stat-item">\n')
-        f.write('                    <p class="label">総単語数</p>\n')
-        f.write(f'                    <p class="value">{len(tokens)}</p>\n')
-        f.write('                </div>\n')
-        f.write('            </div>\n')
-        f.write('        </div>\n')
-        f.write('        \n')
-        f.write('        <div class="section">\n')
-        f.write('            <h2>文の長さの分布</h2>\n')
-        f.write('            <ul>\n')
-        for length, count in sorted(sentence_stats.items()):
-            f.write(f'                <li>{length}単語の文: {count}個</li>\n')
-        f.write('            </ul>\n')
-        f.write('        </div>\n')
-        f.write('        \n')
-        f.write('        <div class="section">\n')
-        f.write('            <h2>品詞の分布</h2>\n')
-        f.write('            <ul>\n')
-        for pos, count in sorted(pos_dist.items(), key=lambda x: x[1], reverse=True):
-            f.write(f'                <li>{pos}: {count}回</li>\n')
-        f.write('            </ul>\n')
-        f.write('        </div>\n')
-        f.write('    </div>\n')
-        f.write('</body>\n')
-        f.write('</html>\n')
+        f.write(f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>テキスト分析結果</title>
+            <style>
+                body {{
+                    font-family: 'Helvetica Neue', Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #333;
+                    max-width: 800px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    background-color: #f5f5f5;
+                }}
+                .container {{
+                    background-color: white;
+                    border-radius: 8px;
+                    padding: 30px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }}
+                h1 {{
+                    color: #2c3e50;
+                    border-bottom: 2px solid #3498db;
+                    padding-bottom: 10px;
+                    margin-top: 0;
+                }}
+                .section {{
+                    background-color: #f8f9fa;
+                    border-radius: 8px;
+                    padding: 20px;
+                    margin-bottom: 30px;
+                }}
+                .section h2 {{
+                    color: #2c3e50;
+                    margin-top: 0;
+                }}
+                .stats {{
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 20px;
+                    margin-top: 15px;
+                }}
+                .stat-item {{
+                    background-color: white;
+                    padding: 15px;
+                    border-radius: 6px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }}
+                .stat-item p {{
+                    margin: 0;
+                    font-size: 1.1em;
+                }}
+                .stat-item .label {{
+                    color: #7f8c8d;
+                    font-size: 0.9em;
+                }}
+                .stat-item .value {{
+                    color: #2c3e50;
+                    font-weight: bold;
+                    font-size: 1.2em;
+                }}
+                ul {{
+                    list-style-type: none;
+                    padding: 0;
+                    margin: 0;
+                }}
+                li {{
+                    background-color: white;
+                    padding: 10px 15px;
+                    margin-bottom: 8px;
+                    border-radius: 4px;
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                }}
+                .highlight {{
+                    background-color: #fff3cd;
+                    padding: 2px 4px;
+                    border-radius: 3px;
+                }}
+                .text-container {{
+                    margin-bottom: 30px;
+                    font-size: 16px;
+                    line-height: 1.8;
+                    padding: 20px;
+                    background-color: white;
+                    border-radius: 8px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }}
+                .frequent-words {{
+                    margin: 20px 0;
+                    padding: 20px;
+                    background-color: white;
+                    border-radius: 8px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }}
+                table {{
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 20px 0;
+                    background-color: white;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }}
+                th, td {{
+                    padding: 12px 15px;
+                    text-align: left;
+                    border-bottom: 1px solid #ddd;
+                }}
+                th {{
+                    background-color: #3498db;
+                    color: white;
+                }}
+                tr:hover {{
+                    background-color: #f5f5f5;
+                }}
+                @media (max-width: 600px) {{
+                    .stats {{
+                        grid-template-columns: 1fr;
+                    }}
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>テキスト分析結果</h1>
+                
+                <div class="section">
+                    <h2>分析対象テキスト</h2>
+                    <div class="highlight">注: 色付きで表示されている単語は、上位10個の頻出単語です。同じ単語は同じ色で表示されています。</div>
+                    <div class="text-container">
+                        {highlight_frequent_words(text, frequent_words)}
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>頻出単語トップ10</h2>
+                    <div class="frequent-words">
+                        <table>
+                            <tr>
+                                <th>単語</th>
+                                <th>回数</th>
+                            </tr>
+                            {''.join(f'<tr><td><span style="background-color: {get_color_for_word(word, {}, i)}; color: white; padding: 2px 4px; border-radius: 3px;">{word}</span></td><td>{count}回</td></tr>' for i, (word, count) in enumerate(frequent_words))}
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>基本統計</h2>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <p class="label">総文字数</p>
+                            <p class="value">{len(text)}</p>
+                        </div>
+                        <div class="stat-item">
+                            <p class="label">総単語数</p>
+                            <p class="value">{len(tokens)}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>文の長さの分布</h2>
+                    <ul>
+                        {''.join(f'<li>{length}単語の文: {count}個</li>' for length, count in sorted(sentence_stats.items()))}
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <h2>品詞の分布</h2>
+                    <ul>
+                        {''.join(f'<li>{pos}: {count}回</li>' for pos, count in sorted(pos_dist.items(), key=lambda x: x[1], reverse=True))}
+                    </ul>
+                </div>
+            </div>
+        </body>
+        </html>
+        """)
     
     return output_file
 
