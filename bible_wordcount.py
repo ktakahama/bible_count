@@ -3,14 +3,11 @@ from collections import Counter
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
-import MeCab
 import os
 from janome.tokenizer import Tokenizer
 from janome.analyzer import Analyzer
 from janome.charfilter import *
 from janome.tokenfilter import *
-from janome import sysdic
-from janome.dic import UserDictionary
 import tempfile
 from collections import defaultdict
 from datetime import datetime
@@ -78,20 +75,14 @@ def analyze_sentence_lengths(text):
     }
 
 def analyze_pos_distribution(text):
-    # ユーザー辞書を作成
-    user_dict_file = create_user_dict()
-    
-    # ユーザー辞書を使用してTokenizerを初期化
-    t = Tokenizer(udic=user_dict_file, udic_enc="utf8", udic_type="csv")
+    # Tokenizerを初期化
+    t = Tokenizer()
     
     # 品詞の分布を分析
     pos_counter = Counter()
     for token in t.tokenize(text):
         pos = token.part_of_speech.split(',')[0]
         pos_counter[pos] += 1
-    
-    # 一時ファイルを削除
-    os.remove(user_dict_file)
     
     return pos_counter
 
@@ -115,11 +106,8 @@ def analyze_emotion_words(text):
     return emotion_counts
 
 def extract_proper_nouns(text):
-    # ユーザー辞書を作成
-    user_dict_file = create_user_dict()
-    
-    # ユーザー辞書を使用してTokenizerを初期化
-    t = Tokenizer(udic=user_dict_file, udic_enc="utf8", udic_type="csv")
+    # Tokenizerを初期化
+    t = Tokenizer()
     
     # 固有名詞を抽出
     proper_nouns = []
@@ -127,9 +115,6 @@ def extract_proper_nouns(text):
         pos = token.part_of_speech.split(',')
         if pos[0] == '名詞' and pos[1] == '固有名詞':
             proper_nouns.append(token.surface)
-    
-    # 一時ファイルを削除
-    os.remove(user_dict_file)
     
     return Counter(proper_nouns)
 
@@ -431,46 +416,6 @@ def create_analysis(input_file):
         """)
     
     return output_file
-
-def create_user_dict():
-    # 一時ファイルに辞書定義を書き込む
-    user_dict_data = """モーセ,モーセ,モーセ,固有名詞,*,*,*,モーセ,モーセ,モーセ,外国,*,*
-アブラハム,アブラハム,アブラハム,固有名詞
-イサク,イサク,イサク,固有名詞
-ヤコブ,ヤコブ,ヤコブ,固有名詞
-アダム,アダム,アダム,固有名詞
-エバ,エバ,エバ,固有名詞
-ノア,ノア,ノア,固有名詞
-ヨセフ,ヨセフ,ヨセフ,固有名詞
-ダビデ,ダビデ,ダビデ,固有名詞
-ソロモン,ソロモン,ソロモン,固有名詞
-イエス,イエス,イエス,固有名詞
-マリア,マリア,マリア,固有名詞
-ペテロ,ペテロ,ペテロ,固有名詞
-パウロ,パウロ,パウロ,固有名詞
-カイン,カイン,カイン,固有名詞
-アベル,アベル,アベル,固有名詞
-サウル,サウル,サウル,固有名詞
-サムエル,サムエル,サムエル,固有名詞
-エリヤ,エリヤ,エリヤ,固有名詞
-エリシャ,エリシャ,エリシャ,固有名詞
-ヨハネ,ヨハネ,ヨハネ,固有名詞
-ルカ,ルカ,ルカ,固有名詞
-マタイ,マタイ,マタイ,固有名詞
-マルコ,マルコ,マルコ,固有名詞
-ユダ,ユダ,ユダ,固有名詞
-エデン,エデン,エデン,固有名詞
-ピソン,ピソン,ピソン,固有名詞
-ギホン,ギホン,ギホン,固有名詞
-ヒデケル,ヒデケル,ヒデケル,固有名詞
-ユフラテ,ユフラテ,ユフラテ,固有名詞
-アッスリヤ,アッスリヤ,アッスリヤ,固有名詞
-クシ,クシ,クシ,固有名詞
-ハビラ,ハビラ,ハビラ,固有名詞
-"""
-    with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8') as f:
-        f.write(user_dict_data)
-    return f.name
 
 def tokenize_japanese(text):
     """
