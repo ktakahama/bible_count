@@ -436,9 +436,17 @@ def create_analysis(input_file):
                 
                 <div class="section">
                     <h2>品詞の分布</h2>
-                    <ul>
-                        {''.join(f'<li>{pos}: {count}回</li>' for pos, count in sorted(pos_dist.items(), key=lambda x: x[1], reverse=True))}
-                    </ul>
+                    <div class="stats">
+                        {''.join(f'''
+                        <div class="stat-item">
+                            <p class="label">{pos}</p>
+                            <p class="value">{count}回</p>
+                            <div class="samples">
+                                {', '.join([token.surface for token in t.tokenize(text) if token.part_of_speech.split(',')[0] == pos][:10])}
+                            </div>
+                        </div>
+                        ''' for pos, count in sorted(pos_dist.items(), key=lambda x: x[1], reverse=True))}
+                    </div>
                 </div>
             </div>
         </body>
