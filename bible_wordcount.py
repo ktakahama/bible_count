@@ -3,7 +3,6 @@ from collections import Counter
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
-import MeCab
 import os
 from janome.tokenizer import Tokenizer
 from janome.analyzer import Analyzer
@@ -61,39 +60,26 @@ def analyze_word_pairs(tokens):
     return pairs
 
 def analyze_sentence_lengths(text):
-    # 文を分割
+    """
+    文の長さを分析する
+    """
+    # 文を分割（句点、感嘆符、疑問符で区切る）
     sentences = re.split(r'[。！？]', text)
-    sentences = [s.strip() for s in sentences if s.strip()]
-    
-    # 文の長さを計算
-    lengths = [len(s) for s in sentences]
-    
-    return {
-        '平均文長': mean(lengths),
-        '中央値文長': median(lengths),
-        '標準偏差': stdev(lengths) if len(lengths) > 1 else 0,
-        '最短文長': min(lengths),
-        '最長文長': max(lengths),
-        '文の総数': len(lengths)
-    }
+    sentence_lengths = [len(tokenize_japanese(sentence)) for sentence in sentences if sentence.strip()]
+    return dict(Counter(sentence_lengths))
 
 def analyze_pos_distribution(text):
-    # ユーザー辞書を作成
-    user_dict_file = create_user_dict()
+    """
+    品詞の分布を分析する
+    """
+    t = Tokenizer()
+    pos_counts = Counter()
     
-    # ユーザー辞書を使用してTokenizerを初期化
-    t = Tokenizer(udic=user_dict_file, udic_enc="utf8", udic_type="csv")
-    
-    # 品詞の分布を分析
-    pos_counter = Counter()
     for token in t.tokenize(text):
         pos = token.part_of_speech.split(',')[0]
-        pos_counter[pos] += 1
+        pos_counts[pos] += 1
     
-    # 一時ファイルを削除
-    os.remove(user_dict_file)
-    
-    return pos_counter
+    return pos_counts
 
 def analyze_emotion_words(text):
     # 感情語のリスト
@@ -219,217 +205,55 @@ def get_word_explanations(text: str) -> Dict[str, str]:
     
     return explanations
 
-def create_analysis(text_file, suffix=None):
-    # テキストファイルを読み込む
-    with open(text_file, 'r', encoding='utf-8') as f:
+def create_analysis(input_file):
+    """
+    テキストファイルを分析し、結果をHTMLファイルとして出力する
+    """
+    with open(input_file, 'r', encoding='utf-8') as f:
         text = f.read()
     
-    # 日本語のストップワード（名詞用に調整）
-    stop_words = {'それ', 'これ', 'あれ', 'どれ', 'ここ', 'そこ', 'あそこ', 'どこ',
-                 'だれ', 'なに', '方々', 'ため', 'とき', 'もの', 'こと', 'ところ',
-                 'よう', 'ほう', 'まま', 'みな', 'かた', 'われわれ', 'あなた',
-                 'たち','うち', 'がた', '彼ら', '人々','これら', 'わたし', 'すべて',
-                 'もろもろ', 'ゆえ', '今や', '間', '上', '中', '下', '前', '後',
-                 '内', '外', '他', '私', '我々', '彼', '此', '其', '何', '時',
-                 '者', '人', '方', '物', '事', '所', '場合', '部分', '問題', '状態',
-                 '結果', '関係', '相手', '程度', '目的', '理由', '原因', '結論',
-                 '意味', '意見', '考え', '気持ち', '感じ', '言葉', '話', '声',
-                 '顔', '目', '手', '足', '体', '頭', '心', '気', '空気', '天気',
-                 '今日', '明日', '昨日', '今', '時間', '場所', '一つ', '二つ',
-                 '三つ', '四つ', '五つ', '一人', '二人', '三人', '四人', '五人'}
-    
-    # 日本語テキスト用にトークン化
+    # 分析を実行
     tokens = tokenize_japanese(text)
+    sentence_stats = analyze_sentence_lengths(text)
+    pos_dist = analyze_pos_distribution(text)
     
-    # ストップワードを除去
-    tokens = [word for word in tokens if word not in stop_words and len(word) > 1]
-    
-    # 単語の頻度をカウント
-    word_freq = Counter(tokens)
-    
-    # 上位10個の単語を取得（3回以上出現するもののみ）
-    frequent_words = [(word, count) for word, count in word_freq.most_common(10) if count >= 3]
-    
-    # 出力ファイル名を日付付きで作成
-    current_date = datetime.now().strftime('%Y%m%d')
-    if suffix:
-        output_file = f'output/analysis_{current_date}_{suffix}.md'
-    else:
-        output_file = f'output/analysis_{current_date}.md'
-    
-    # 出力ディレクトリが存在しない場合は作成
-    os.makedirs('output', exist_ok=True)
-    
-    # 結果をファイルに書き込む
+    # 結果をHTMLとして出力
+    output_file = input_file.replace('.txt', '_analysis.html')
     with open(output_file, 'w', encoding='utf-8') as f:
-        # CSSスタイルの追加
-        f.write("""<style>
-            body {
-                font-family: 'Helvetica Neue', Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0;
-                padding: 20px;
-            }
-            .container {
-                max-width: 100%;
-                margin: 0 auto;
-                padding: 0 20px;
-            }
-            .section {
-                background-color: #f8f9fa;
-                border-radius: 8px;
-                padding: 20px;
-                margin-bottom: 30px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .section-title {
-                color: #2c3e50;
-                border-bottom: 2px solid #3498db;
-                padding-bottom: 10px;
-                margin-top: 0;
-            }
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-                background-color: white;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            th, td {
-                padding: 12px 15px;
-                text-align: left;
-                border-bottom: 1px solid #ddd;
-            }
-            th {
-                background-color: #3498db;
-                color: white;
-            }
-            tr:hover {
-                background-color: #f5f5f5;
-            }
-            .highlight {
-                background-color: #fff3cd;
-                padding: 2px 4px;
-                border-radius: 3px;
-            }
-            .text-container {
-                margin-bottom: 30px;
-                font-size: 16px;
-                line-height: 1.8;
-                padding: 20px;
-                background-color: white;
-                border-radius: 8px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            .frequent-words {
-                margin: 20px 0;
-                padding: 20px;
-                background-color: white;
-                border-radius: 8px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            .analysis-container {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 20px;
-            }
-            @media (max-width: 768px) {
-                .container {
-                    padding: 0 10px;
-                }
-                .section {
-                    padding: 15px;
-                }
-                th, td {
-                    padding: 8px 10px;
-                }
-            }
-        </style>\n\n""")
-        
-        f.write('<div class="container">\n')
-        f.write("# 聖書テキスト分析レポート\n\n")
-        
-        # 分析対象テキストセクション
-        f.write('<div class="section">\n')
-        f.write('<h2 class="section-title">分析対象テキスト</h2>\n')
-        f.write('<div class="highlight">注: 色付きで表示されている単語は、上位10個の頻出単語です。同じ単語は同じ色で表示されています。</div>\n\n')
-        
-        # テキストコンテナ
-        f.write('<div class="text-container">\n')
-        f.write(highlight_frequent_words(text, frequent_words) + "\n")
-        f.write('</div>\n\n')
-        
-        # 頻出単語セクション
-        f.write('<div class="frequent-words">\n')
-        f.write('  <h3>頻出単語トップ10</h3>\n')
-        f.write('  <table>\n')
-        f.write('    <tr>\n')
-        f.write('      <th>単語</th>\n')
-        f.write('      <th>回数</th>\n')
-        f.write('    </tr>\n')
-        for i, (word, count) in enumerate(frequent_words):
-            color = get_color_for_word(word, {}, i)
-            f.write(f'    <tr>\n')
-            f.write(f'      <td><span style="background-color: {color}; color: white; padding: 2px 4px; border-radius: 3px;">{word}</span></td>\n')
-            f.write(f'      <td>{count}回</td>\n')
-            f.write(f'    </tr>\n')
-        f.write('  </table>\n')
-        f.write('</div>\n')
-        f.write('</div>\n\n')
-        
-        # 分析結果セクション
-        f.write('<div class="section">\n')
-        f.write('<h2 class="section-title">分析結果</h2>\n\n')
-        
-        # 分析結果をグリッドで表示
-        f.write('<div class="analysis-container">\n')
-        
-        # テキスト統計
-        f.write('<div>\n')
-        f.write('<h3>1. テキスト統計</h3>\n')
-        f.write('<table>\n')
-        f.write('  <tr>\n')
-        f.write('    <th>項目</th>\n')
-        f.write('    <th>値</th>\n')
-        f.write('  </tr>\n')
-        f.write(f'  <tr><td>総単語数</td><td>{len(tokens)}</td></tr>\n')
-        f.write(f'  <tr><td>ユニークな単語数</td><td>{len(set(tokens))}</td></tr>\n')
-        f.write(f'  <tr><td>語彙の豊富さ</td><td>{len(set(tokens))/len(tokens):.3f}</td></tr>\n')
-        f.write('</table>\n')
-        f.write('</div>\n')
-        
-        # 文の長さの分析
-        f.write('<div>\n')
-        f.write('<h3>2. 文の長さの分析</h3>\n')
-        sentence_stats = analyze_sentence_lengths(text)
-        f.write('<table>\n')
-        f.write('  <tr>\n')
-        f.write('    <th>統計量</th>\n')
-        f.write('    <th>値</th>\n')
-        f.write('  </tr>\n')
-        for stat, value in sentence_stats.items():
-            f.write(f'  <tr><td>{stat}</td><td>{value}</td></tr>\n')
-        f.write('</table>\n')
-        f.write('</div>\n')
-        
-        # 品詞の分布
-        f.write('<div>\n')
-        f.write('<h3>3. 品詞の分布</h3>\n')
-        pos_dist = analyze_pos_distribution(text)
-        f.write('<table>\n')
-        f.write('  <tr>\n')
-        f.write('    <th>品詞</th>\n')
-        f.write('    <th>出現回数</th>\n')
-        f.write('  </tr>\n')
-        for pos, count in pos_dist.most_common():
-            f.write(f'  <tr><td>{pos}</td><td>{count}回</td></tr>\n')
-        f.write('</table>\n')
-        f.write('</div>\n')
-        
-        f.write('</div>\n')  # analysis-containerの終了
-        f.write('</div>\n')  # sectionの終了
-        f.write('</div>\n')  # containerの終了
+        f.write(f"""
+        <html>
+        <head>
+            <title>テキスト分析結果</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                .section {{ margin-bottom: 20px; }}
+            </style>
+        </head>
+        <body>
+            <h1>テキスト分析結果</h1>
+            
+            <div class="section">
+                <h2>基本統計</h2>
+                <p>総文字数: {len(text)}</p>
+                <p>総単語数: {len(tokens)}</p>
+            </div>
+            
+            <div class="section">
+                <h2>文の長さの分布</h2>
+                <ul>
+                    {''.join(f'<li>{length}文字の文: {count}個</li>' for length, count in sorted(sentence_stats.items()))}
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>品詞の分布</h2>
+                <ul>
+                    {''.join(f'<li>{pos}: {count}回</li>' for pos, count in sorted(pos_dist.items(), key=lambda x: x[1], reverse=True))}
+                </ul>
+            </div>
+        </body>
+        </html>
+        """)
     
     return output_file
 
@@ -474,42 +298,16 @@ def create_user_dict():
     return f.name
 
 def tokenize_japanese(text):
-    # ユーザー辞書を作成
-    user_dict_file = create_user_dict()
-    
-    # ユーザー辞書を使用してTokenizerを初期化
-    t = Tokenizer(udic=user_dict_file, udic_enc="utf8", udic_type="csv")
-    
-    # トークン化とフィルタリング
+    """
+    日本語テキストをトークン化する
+    """
+    t = Tokenizer()
     tokens = []
     for token in t.tokenize(text):
-        pos = token.part_of_speech.split(',')
-        pos_type = pos[0]
-        
-        # 名詞（固有名詞、一般名詞、代名詞など）
-        if pos_type == '名詞':
-            # 1文字の名詞は除外
-            if len(token.surface) > 1:
-                tokens.append(token.surface)  # 表層形を使用
-        
-        # 動詞（基本形ではなく表層形を使用）
-        elif pos_type == '動詞':
-            tokens.append(token.surface)  # 表層形を使用
-        
-        # 形容詞
-        elif pos_type == '形容詞':
-            tokens.append(token.surface)  # 表層形を使用
-        
-        # 副詞
-        elif pos_type == '副詞':
-            tokens.append(token.surface)  # 表層形を使用
-    
-    # 「モー」を「モーセ」に置換、「テロ」を「ペテロ」に置換
-    tokens = ['モーセ' if token == 'モー' else 'ペテロ' if token == 'テロ' else token for token in tokens]
-    
-    # 一時ファイルを削除
-    os.remove(user_dict_file)
-    
+        # 品詞が名詞、動詞、形容詞、副詞の場合のみトークンとして追加
+        pos = token.part_of_speech.split(',')[0]
+        if pos in ['名詞', '動詞', '形容詞', '副詞']:
+            tokens.append(token.surface)
     return tokens
 
 if __name__ == "__main__":
