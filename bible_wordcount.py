@@ -17,6 +17,7 @@ from statistics import mean, median, stdev
 import openai
 from typing import Dict, List
 from dotenv import load_dotenv
+import html
 
 # NLTKのデータをダウンロード
 try:
@@ -369,7 +370,7 @@ def create_analysis(input_file):
                     <h2>分析対象テキスト</h2>
                     <div class="highlight">注: 色付きで表示されている単語は、上位10個の頻出単語です。同じ単語は同じ色で表示されています。</div>
                     <div class="text-container">
-                        {highlight_frequent_words(text, frequent_words)}
+                        {html.escape(highlight_frequent_words(text, frequent_words))}
                     </div>
                 </div>
                 
