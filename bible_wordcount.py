@@ -451,6 +451,56 @@ def create_analysis(input_file):
                         ''' for pos, count in sorted(pos_dist.items(), key=lambda x: x[1], reverse=True))}
                     </div>
                 </div>
+
+                <div class="section">
+                    <h2>文末表現の分析</h2>
+                    <div class="stats">
+                        {''.join(f'''
+                        <div class="stat-item">
+                            <p class="label">{ending}</p>
+                            <p class="value">{count}回</p>
+                        </div>
+                        ''' for ending, count in analyze_sentence_patterns(text).items())}
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>感情語の分析</h2>
+                    <div class="stats">
+                        {''.join(f'''
+                        <div class="stat-item">
+                            <p class="label">{emotion}</p>
+                            <p class="value">{count}回</p>
+                        </div>
+                        ''' for emotion, count in analyze_emotion_words(text).items())}
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>固有名詞トップ10</h2>
+                    <div class="frequent-words">
+                        <table>
+                            <tr>
+                                <th>固有名詞</th>
+                                <th>出現回数</th>
+                            </tr>
+                            {''.join(f'<tr><td>{word}</td><td>{count}回</td></tr>' for word, count in extract_proper_nouns(text).most_common(10))}
+                        </table>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>共起関係トップ10</h2>
+                    <div class="frequent-words">
+                        <table>
+                            <tr>
+                                <th>単語ペア</th>
+                                <th>共起回数</th>
+                            </tr>
+                            {''.join(f'<tr><td>{pair[0]} - {pair[1]}</td><td>{count}回</td></tr>' for pair, count in sorted(analyze_word_pairs(tokens).items(), key=lambda x: x[1], reverse=True)[:10])}
+                        </table>
+                    </div>
+                </div>
             </div>
         </body>
         </html>
