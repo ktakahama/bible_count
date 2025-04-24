@@ -211,8 +211,8 @@ def create_analysis(input_file):
     with open(input_file, 'r', encoding='utf-8') as f:
         text = f.read()
     
-    # 本文中の──をHTMLエンティティに置換
-    text = text.replace('──', '&mdash;')
+    # HTMLコメント記号をHTMLエンティティに置換
+    text = text.replace('<!--', '&lt;!--').replace('-->', '--&gt;')
     
     # 日本語のストップワード（名詞用に調整）
     stop_words = {'それ', 'これ', 'あれ', 'どれ', 'ここ', 'そこ', 'あそこ', 'どこ',
