@@ -162,7 +162,10 @@ def highlight_frequent_words(text, frequent_words):
             # HTMLのspanタグで背景色でハイライト（白文字）
             # 単語をHTMLエンティティに変換してから置換
             escaped_word = word.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-            text = text.replace(word, f'<span style="background-color: {color}; color: white; padding: 2px 2px; border-radius: 2px;">{escaped_word}</span>')
+            # 正規表現を使用して、HTMLタグ内でない単語のみを置換
+            text = re.sub(f'(?<!<[^>]*){re.escape(word)}(?![^<]*>)', 
+                         f'<span style="background-color: {color}; color: white; padding: 2px 2px; border-radius: 2px;">{escaped_word}</span>', 
+                         text)
     return text
 
 def get_word_explanations(text: str) -> Dict[str, str]:
