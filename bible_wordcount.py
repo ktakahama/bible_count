@@ -219,9 +219,11 @@ def get_word_explanations(text: str) -> Dict[str, str]:
     
     return explanations
 
-def create_analysis(text_file, suffix=None):
-    # テキストファイルを読み込む
-    with open(text_file, 'r', encoding='utf-8') as f:
+def create_analysis(input_file):
+    """
+    テキストファイルを分析し、結果をHTMLファイルとして出力する
+    """
+    with open(input_file, 'r', encoding='utf-8') as f:
         text = f.read()
     
     # 日本語のストップワード（名詞用に調整）
@@ -238,198 +240,51 @@ def create_analysis(text_file, suffix=None):
                  '今日', '明日', '昨日', '今', '時間', '場所', '一つ', '二つ',
                  '三つ', '四つ', '五つ', '一人', '二人', '三人', '四人', '五人'}
     
-    # 日本語テキスト用にトークン化
+    # 分析を実行
     tokens = tokenize_japanese(text)
-    
-    # ストップワードを除去
     tokens = [word for word in tokens if word not in stop_words and len(word) > 1]
-    
-    # 単語の頻度をカウント
     word_freq = Counter(tokens)
-    
-    # 上位10個の単語を取得（3回以上出現するもののみ）
     frequent_words = [(word, count) for word, count in word_freq.most_common(10) if count >= 3]
+    sentence_stats = analyze_sentence_lengths(text)
+    pos_dist = analyze_pos_distribution(text)
     
-    # 出力ファイル名を日付付きで作成
-    current_date = datetime.now().strftime('%Y%m%d')
-    if suffix:
-        output_file = f'output/analysis_{current_date}_{suffix}.md'
-    else:
-        output_file = f'output/analysis_{current_date}.md'
-    
-    # 出力ディレクトリが存在しない場合は作成
-    os.makedirs('output', exist_ok=True)
-    
-    # 結果をファイルに書き込む
+    # 結果をHTMLとして出力
+    output_file = input_file.replace('.txt', '_analysis.html')
     with open(output_file, 'w', encoding='utf-8') as f:
-        # CSSスタイルの追加
-        f.write("""<style>
-            body {
-                font-family: 'Helvetica Neue', Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0;
-                padding: 20px;
-            }
-            .container {
-                max-width: 100%;
-                margin: 0 auto;
-                padding: 0 20px;
-            }
-            .section {
-                background-color: #f8f9fa;
-                border-radius: 8px;
-                padding: 20px;
-                margin-bottom: 30px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .section-title {
-                color: #2c3e50;
-                border-bottom: 2px solid #3498db;
-                padding-bottom: 10px;
-                margin-top: 0;
-            }
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-                background-color: white;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            th, td {
-                padding: 12px 15px;
-                text-align: left;
-                border-bottom: 1px solid #ddd;
-            }
-            th {
-                background-color: #3498db;
-                color: white;
-            }
-            tr:hover {
-                background-color: #f5f5f5;
-            }
-            .highlight {
-                background-color: #fff3cd;
-                padding: 2px 4px;
-                border-radius: 3px;
-            }
-            .text-container {
-                margin-bottom: 30px;
-                font-size: 16px;
-                line-height: 1.8;
-                padding: 20px;
-                background-color: white;
-                border-radius: 8px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            .frequent-words {
-                margin: 20px 0;
-                padding: 20px;
-                background-color: white;
-                border-radius: 8px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            .analysis-container {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 20px;
-            }
-            @media (max-width: 768px) {
-                .container {
-                    padding: 0 10px;
-                }
-                .section {
-                    padding: 15px;
-                }
-                th, td {
-                    padding: 8px 10px;
-                }
-            }
-        </style>\n\n""")
-        
-        f.write('<div class="container">\n')
-        f.write("# 聖書テキスト分析レポート\n\n")
-        
-        # 分析対象テキストセクション
-        f.write('<div class="section">\n')
-        f.write('<h2 class="section-title">分析対象テキスト</h2>\n')
-        f.write('<div class="highlight">注: 色付きで表示されている単語は、上位10個の頻出単語です。同じ単語は同じ色で表示されています。</div>\n\n')
-        
-        # テキストコンテナ
-        f.write('<div class="text-container">\n')
-        f.write(highlight_frequent_words(text, frequent_words) + "\n")
-        f.write('</div>\n\n')
-        
-        # 頻出単語セクション
-        f.write('<div class="frequent-words">\n')
-        f.write('  <h3>頻出単語トップ10</h3>\n')
-        f.write('  <table>\n')
-        f.write('    <tr>\n')
-        f.write('      <th>単語</th>\n')
-        f.write('      <th>回数</th>\n')
-        f.write('    </tr>\n')
-        for i, (word, count) in enumerate(frequent_words):
-            color = get_color_for_word(word, {}, i)
-            f.write(f'    <tr>\n')
-            f.write(f'      <td><span style="background-color: {color}; color: white; padding: 2px 4px; border-radius: 3px;">{word}</span></td>\n')
-            f.write(f'      <td>{count}回</td>\n')
-            f.write(f'    </tr>\n')
-        f.write('  </table>\n')
-        f.write('</div>\n')
-        f.write('</div>\n\n')
-        
-        # 分析結果セクション
-        f.write('<div class="section">\n')
-        f.write('<h2 class="section-title">分析結果</h2>\n\n')
-        
-        # 分析結果をグリッドで表示
-        f.write('<div class="analysis-container">\n')
-        
-        # テキスト統計
-        f.write('<div>\n')
-        f.write('<h3>1. テキスト統計</h3>\n')
-        f.write('<table>\n')
-        f.write('  <tr>\n')
-        f.write('    <th>項目</th>\n')
-        f.write('    <th>値</th>\n')
-        f.write('  </tr>\n')
-        f.write(f'  <tr><td>総単語数</td><td>{len(tokens)}</td></tr>\n')
-        f.write(f'  <tr><td>ユニークな単語数</td><td>{len(set(tokens))}</td></tr>\n')
-        f.write(f'  <tr><td>語彙の豊富さ</td><td>{len(set(tokens))/len(tokens):.3f}</td></tr>\n')
-        f.write('</table>\n')
-        f.write('</div>\n')
-        
-        # 文の長さの分析
-        f.write('<div>\n')
-        f.write('<h3>2. 文の長さの分析</h3>\n')
-        sentence_stats = analyze_sentence_lengths(text)
-        f.write('<table>\n')
-        f.write('  <tr>\n')
-        f.write('    <th>統計量</th>\n')
-        f.write('    <th>値</th>\n')
-        f.write('  </tr>\n')
-        for stat, value in sentence_stats.items():
-            f.write(f'  <tr><td>{stat}</td><td>{value}</td></tr>\n')
-        f.write('</table>\n')
-        f.write('</div>\n')
-        
-        # 品詞の分布
-        f.write('<div>\n')
-        f.write('<h3>3. 品詞の分布</h3>\n')
-        pos_dist = analyze_pos_distribution(text)
-        f.write('<table>\n')
-        f.write('  <tr>\n')
-        f.write('    <th>品詞</th>\n')
-        f.write('    <th>出現回数</th>\n')
-        f.write('  </tr>\n')
-        for pos, count in pos_dist.most_common():
-            f.write(f'  <tr><td>{pos}</td><td>{count}回</td></tr>\n')
-        f.write('</table>\n')
-        f.write('</div>\n')
-        
-        f.write('</div>\n')  # analysis-containerの終了
-        f.write('</div>\n')  # sectionの終了
-        f.write('</div>\n')  # containerの終了
+        f.write(f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>テキスト分析結果</title>
+            <style>
+                body {{
+                    font-family: 'Helvetica Neue', Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #333;
+                    max-width: 800px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    background-color: #f5f5f5;
+                }}
+                .container {{
+                    background-color: white;
+                    border-radius: 8px;
+                    padding: 30px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }}
+                h1 {{
+                    color: #2c3e50;
+                    border-bottom: 2px solid #3498db;
+                    padding-bottom: 10px;
+                    margin-top: 0;
+                }}
+                .section {{
+                    background-color: #f8f9fa;
+                    border-radius: 8px;
+                    padding: 20px;
+                    margin-bottom: 30px;
+                }}
                 .section h2 {{
                     color: #2c3e50;
                     margin-top: 0;
@@ -471,45 +326,80 @@ def create_analysis(text_file, suffix=None):
                     border-radius: 4px;
                     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
                 }}
+                .highlight {{
+                    background-color: #fff3cd;
+                    padding: 2px 4px;
+                    border-radius: 3px;
+                }}
+                .text-container {{
+                    margin-bottom: 30px;
+                    font-size: 16px;
+                    line-height: 1.8;
+                    padding: 20px;
+                    background-color: white;
+                    border-radius: 8px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }}
+                .frequent-words {{
+                    margin: 20px 0;
+                    padding: 20px;
+                    background-color: white;
+                    border-radius: 8px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }}
+                table {{
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 20px 0;
+                    background-color: white;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }}
+                th, td {{
+                    padding: 12px 15px;
+                    text-align: left;
+                    border-bottom: 1px solid #ddd;
+                }}
+                th {{
+                    background-color: #3498db;
+                    color: white;
+                }}
+                tr:hover {{
+                    background-color: #f5f5f5;
+                }}
                 @media (max-width: 600px) {{
                     .stats {{
                         grid-template-columns: 1fr;
-    # ユーザー辞書を作成
-    user_dict_file = create_user_dict()
-    
-    # ユーザー辞書を使用してTokenizerを初期化
-    t = Tokenizer(udic=user_dict_file, udic_enc="utf8", udic_type="csv")
-    
-    # トークン化とフィルタリング
+                    }}
+                }}
+            </style>
+        </head>
         <body>
             <div class="container">
-        pos = token.part_of_speech.split(',')
-        pos_type = pos[0]
-        
-        # 名詞（固有名詞、一般名詞、代名詞など）
-        if pos_type == '名詞':
-            # 1文字の名詞は除外
-            if len(token.surface) > 1:
-                tokens.append(token.surface)  # 表層形を使用
-        
-        # 動詞（基本形ではなく表層形を使用）
-        elif pos_type == '動詞':
-            tokens.append(token.surface)  # 表層形を使用
-        
-        # 形容詞
-        elif pos_type == '形容詞':
-            tokens.append(token.surface)  # 表層形を使用
-        
-        # 副詞
-        elif pos_type == '副詞':
-            tokens.append(token.surface)  # 表層形を使用
-    
-    # 「モー」を「モーセ」に置換、「テロ」を「ペテロ」に置換
-    tokens = ['モーセ' if token == 'モー' else 'ペテロ' if token == 'テロ' else token for token in tokens]
-    
-    # 一時ファイルを削除
-    os.remove(user_dict_file)
-    
+                <h1>テキスト分析結果</h1>
+                
+                <div class="section">
+                    <h2>分析対象テキスト</h2>
+                    <div class="highlight">注: 色付きで表示されている単語は、上位10個の頻出単語です。同じ単語は同じ色で表示されています。</div>
+                    <div class="text-container">
+                        {highlight_frequent_words(text, frequent_words)}
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>頻出単語トップ10</h2>
+                    <div class="frequent-words">
+                        <table>
+                            <tr>
+                                <th>単語</th>
+                                <th>回数</th>
+                            </tr>
+                            {''.join(f'<tr><td><span style="background-color: {get_color_for_word(word, {}, i)}; color: white; padding: 2px 4px; border-radius: 3px;">{word}</span></td><td>{count}回</td></tr>' for i, (word, count) in enumerate(frequent_words))}
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>基本統計</h2>
                     <div class="stats">
                         <div class="stat-item">
                             <p class="label">総文字数</p>
