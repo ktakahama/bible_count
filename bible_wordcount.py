@@ -221,35 +221,118 @@ def create_analysis(input_file):
     output_file = input_file.replace('.txt', '_analysis.html')
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(f"""
+        <!DOCTYPE html>
         <html>
         <head>
+            <meta charset="UTF-8">
             <title>テキスト分析結果</title>
             <style>
-                body {{ font-family: Arial, sans-serif; margin: 20px; }}
-                .section {{ margin-bottom: 20px; }}
+                body {{
+                    font-family: 'Helvetica Neue', Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #333;
+                    max-width: 800px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    background-color: #f5f5f5;
+                }}
+                .container {{
+                    background-color: white;
+                    border-radius: 8px;
+                    padding: 30px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }}
+                h1 {{
+                    color: #2c3e50;
+                    border-bottom: 2px solid #3498db;
+                    padding-bottom: 10px;
+                    margin-top: 0;
+                }}
+                .section {{
+                    background-color: #f8f9fa;
+                    border-radius: 8px;
+                    padding: 20px;
+                    margin-bottom: 30px;
+                }}
+                .section h2 {{
+                    color: #2c3e50;
+                    margin-top: 0;
+                }}
+                .stats {{
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 20px;
+                    margin-top: 15px;
+                }}
+                .stat-item {{
+                    background-color: white;
+                    padding: 15px;
+                    border-radius: 6px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }}
+                .stat-item p {{
+                    margin: 0;
+                    font-size: 1.1em;
+                }}
+                .stat-item .label {{
+                    color: #7f8c8d;
+                    font-size: 0.9em;
+                }}
+                .stat-item .value {{
+                    color: #2c3e50;
+                    font-weight: bold;
+                    font-size: 1.2em;
+                }}
+                ul {{
+                    list-style-type: none;
+                    padding: 0;
+                    margin: 0;
+                }}
+                li {{
+                    background-color: white;
+                    padding: 10px 15px;
+                    margin-bottom: 8px;
+                    border-radius: 4px;
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                }}
+                @media (max-width: 600px) {{
+                    .stats {{
+                        grid-template-columns: 1fr;
+                    }}
+                }}
             </style>
         </head>
         <body>
-            <h1>テキスト分析結果</h1>
-            
-            <div class="section">
-                <h2>基本統計</h2>
-                <p>総文字数: {len(text)}</p>
-                <p>総単語数: {len(tokens)}</p>
-            </div>
-            
-            <div class="section">
-                <h2>文の長さの分布</h2>
-                <ul>
-                    {''.join(f'<li>{length}文字の文: {count}個</li>' for length, count in sorted(sentence_stats.items()))}
-                </ul>
-            </div>
-            
-            <div class="section">
-                <h2>品詞の分布</h2>
-                <ul>
-                    {''.join(f'<li>{pos}: {count}回</li>' for pos, count in sorted(pos_dist.items(), key=lambda x: x[1], reverse=True))}
-                </ul>
+            <div class="container">
+                <h1>テキスト分析結果</h1>
+                
+                <div class="section">
+                    <h2>基本統計</h2>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <p class="label">総文字数</p>
+                            <p class="value">{len(text)}</p>
+                        </div>
+                        <div class="stat-item">
+                            <p class="label">総単語数</p>
+                            <p class="value">{len(tokens)}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>文の長さの分布</h2>
+                    <ul>
+                        {''.join(f'<li>{length}単語の文: {count}個</li>' for length, count in sorted(sentence_stats.items()))}
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <h2>品詞の分布</h2>
+                    <ul>
+                        {''.join(f'<li>{pos}: {count}回</li>' for pos, count in sorted(pos_dist.items(), key=lambda x: x[1], reverse=True))}
+                    </ul>
+                </div>
             </div>
         </body>
         </html>
