@@ -21,12 +21,16 @@ import openai
 from typing import Dict, List
 from dotenv import load_dotenv
 
+# NLTKのデータをダウンロード
+try:
+    nltk.data.find('tokenizers/punkt')
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('punkt')
+    nltk.download('stopwords')
+
 # .envファイルを読み込む
 load_dotenv()
-
-# 必要なNLTKデータをダウンロード
-nltk.download('punkt')
-nltk.download('stopwords')
 
 def analyze_sentence_patterns(text):
     # 文末表現を分析

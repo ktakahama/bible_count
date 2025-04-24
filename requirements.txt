@@ -5,4 +5,8 @@ pandas==2.2.0
 plotly==5.18.0
 python-dotenv==1.0.1
 openai==1.12.0
-mecab-python3==1.0.8 
+mecab-python3==1.0.8
+rich>=10.14.0
+markdown-it-py>=2.2.0
+pygments<3.0.0,>=2.13.0
+mdurl~=0.1 
