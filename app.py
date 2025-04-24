@@ -31,8 +31,8 @@ if st.button('分析を開始'):
             if os.path.exists(output_file):
                 with open(output_file, 'r', encoding='utf-8') as f:
                     html_content = f.read()
-                    # HTMLコンテンツをiframeで表示
-                    st.components.v1.html(html_content, height=800, scrolling=True)
+                    # HTMLコンテンツをiframeで表示（スクロールなし）
+                    st.components.v1.html(html_content, height=None, scrolling=False)
                 
                 # 追加の分析とグラフ
                 st.markdown("## 追加分析")
