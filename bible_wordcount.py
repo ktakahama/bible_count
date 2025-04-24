@@ -247,7 +247,7 @@ def create_analysis(input_file):
                     font-family: 'Helvetica Neue', Arial, sans-serif;
                     line-height: 1.6;
                     color: #333;
-                    max-width: 800px;
+                    width: 100%;
                     margin: 0;
                     padding: 0;
                     background-color: white;
@@ -257,6 +257,9 @@ def create_analysis(input_file):
                     border-radius: 8px;
                     padding: 30px;
                     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    width: 100%;
+                    max-width: 100%;
+                    box-sizing: border-box;
                 }}
                 h1 {{
                     color: #2c3e50;
@@ -269,6 +272,8 @@ def create_analysis(input_file):
                     border-radius: 8px;
                     padding: 20px;
                     margin-bottom: 30px;
+                    width: 100%;
+                    box-sizing: border-box;
                 }}
                 .section h2 {{
                     color: #2c3e50;
@@ -324,6 +329,8 @@ def create_analysis(input_file):
                     background-color: white;
                     border-radius: 8px;
                     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                    width: 100%;
+                    box-sizing: border-box;
                 }}
                 .frequent-words {{
                     margin: 20px 0;
@@ -331,6 +338,8 @@ def create_analysis(input_file):
                     background-color: white;
                     border-radius: 8px;
                     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                    width: 100%;
+                    box-sizing: border-box;
                 }}
                 table {{
                     width: 100%;
@@ -338,6 +347,7 @@ def create_analysis(input_file):
                     margin: 20px 0;
                     background-color: white;
                     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                    box-sizing: border-box;
                 }}
                 th, td {{
                     padding: 12px 15px;
@@ -351,9 +361,19 @@ def create_analysis(input_file):
                 tr:hover {{
                     background-color: #f5f5f5;
                 }}
-                @media (max-width: 600px) {{
-                    .stats {{
-                        grid-template-columns: 1fr;
+                @media (max-width: 768px) {{
+                    .container {{
+                        padding: 15px;
+                    }}
+                    .section {{
+                        padding: 15px;
+                    }}
+                    .text-container {{
+                        padding: 15px;
+                        font-size: 14px;
+                    }}
+                    .frequent-words {{
+                        padding: 15px;
                     }}
                 }}
             </style>
