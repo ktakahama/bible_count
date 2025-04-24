@@ -211,6 +211,9 @@ def create_analysis(input_file):
     with open(input_file, 'r', encoding='utf-8') as f:
         text = f.read()
     
+    # Tokenizerを初期化
+    t = Tokenizer()
+    
     # 日本語のストップワード（名詞用に調整）
     stop_words = {'それ', 'これ', 'あれ', 'どれ', 'ここ', 'そこ', 'あそこ', 'どこ',
                  'だれ', 'なに', '方々', 'ため', 'とき', 'もの', 'こと', 'ところ',
