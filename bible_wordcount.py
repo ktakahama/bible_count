@@ -160,7 +160,9 @@ def highlight_frequent_words(text, frequent_words):
         if count >= 3:  # 3回以上出現する単語のみ
             color = get_color_for_word(word, color_map, i)
             # HTMLのspanタグで背景色でハイライト（白文字）
-            text = text.replace(word, f'<span style="background-color: {color}; color: white; padding: 2px 2px; border-radius: 2px;">{word}</span>')
+            # 単語をHTMLエンティティに変換してから置換
+            escaped_word = word.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            text = text.replace(word, f'<span style="background-color: {color}; color: white; padding: 2px 2px; border-radius: 2px;">{escaped_word}</span>')
     return text
 
 def get_word_explanations(text: str) -> Dict[str, str]:
@@ -370,7 +372,7 @@ def create_analysis(input_file):
                     <h2>分析対象テキスト</h2>
                     <div class="highlight">注: 色付きで表示されている単語は、上位10個の頻出単語です。同じ単語は同じ色で表示されています。</div>
                     <div class="text-container">
-                        {html.escape(highlight_frequent_words(text, frequent_words))}
+                        {highlight_frequent_words(text, frequent_words)}
                     </div>
                 </div>
                 
