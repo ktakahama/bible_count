@@ -445,7 +445,7 @@ def create_analysis(input_file):
                             <p class="label">{pos}</p>
                             <p class="value">{count}回</p>
                             <div class="samples">
-                                {', '.join([token.surface for token in t.tokenize(text) if token.part_of_speech.split(',')[0] == pos][:10])}
+                                {', '.join([word for word, freq in sorted(Counter([token.surface for token in t.tokenize(text) if token.part_of_speech.split(',')[0] == pos]).items(), key=lambda x: x[1], reverse=True)[:10]])}
                             </div>
                         </div>
                         ''' for pos, count in sorted(pos_dist.items(), key=lambda x: x[1], reverse=True))}
