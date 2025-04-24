@@ -30,7 +30,8 @@ if st.button('分析を開始'):
             # 結果ファイルを読み込んで表示
             if os.path.exists(output_file):
                 with open(output_file, 'r', encoding='utf-8') as f:
-                    st.markdown(f.read(), unsafe_allow_html=True)
+                    html_content = f.read()
+                    st.markdown(html_content, unsafe_allow_html=True)
                 
                 # 追加の分析とグラフ
                 st.markdown("## 追加分析")
