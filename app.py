@@ -32,7 +32,7 @@ if st.button('分析を開始'):
                 with open(output_file, 'r', encoding='utf-8') as f:
                     html_content = f.read()
                     # HTMLコンテンツをiframeで表示（高さを十分に確保）
-                    st.components.v1.html(html_content, height=2000, scrolling=True)
+                    st.components.v1.html(html_content, height=4000, scrolling=True)
                 
                 # 追加の分析とグラフ
                 st.markdown("## 追加分析")
