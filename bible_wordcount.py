@@ -17,7 +17,6 @@ from statistics import mean, median, stdev
 import openai
 from typing import Dict, List
 from dotenv import load_dotenv
-import html
 
 # NLTKのデータをダウンロード
 try:
@@ -160,12 +159,7 @@ def highlight_frequent_words(text, frequent_words):
         if count >= 3:  # 3回以上出現する単語のみ
             color = get_color_for_word(word, color_map, i)
             # HTMLのspanタグで背景色でハイライト（白文字）
-            # 単語をHTMLエンティティに変換してから置換
-            escaped_word = word.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-            # 正規表現を使用して、HTMLタグ内でない単語のみを置換
-            text = re.sub(f'(?<!<[^>]*){re.escape(word)}(?![^<]*>)', 
-                         f'<span style="background-color: {color}; color: white; padding: 2px 2px; border-radius: 2px;">{escaped_word}</span>', 
-                         text)
+            text = text.replace(word, f'<span style="background-color: {color}; color: white; padding: 2px 2px; border-radius: 2px;">{word}</span>')
     return text
 
 def get_word_explanations(text: str) -> Dict[str, str]:
@@ -217,8 +211,11 @@ def create_analysis(input_file):
     with open(input_file, 'r', encoding='utf-8') as f:
         text = f.read()
     
-    # HTMLコメント記号をHTMLエンティティに置換
-    text = text.replace('<!--', '&lt;!--').replace('-->', '--&gt;')
+    # 全ての改行を削除
+    text = text.replace('\n', '')
+    
+    # 本文中の──をHTMLエンティティに置換
+    text = text.replace('──', '&mdash;')
     
     # 日本語のストップワード（名詞用に調整）
     stop_words = {'それ', 'これ', 'あれ', 'どれ', 'ここ', 'そこ', 'あそこ', 'どこ',
